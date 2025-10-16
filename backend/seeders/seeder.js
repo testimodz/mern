@@ -81,7 +81,7 @@ const seedDatabase = async () => {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('Super Admin:');
     console.log('  Username: admin');
-    console.log('  Password: admin');
+    console.log('  Password: admin1');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('Pimpinan:');
     console.log('  Username: pimpinan');
