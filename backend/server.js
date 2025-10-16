@@ -1,18 +1,51 @@
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./config/db');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Middleware - FIX CORS!
+app.use(cors({
+  origin: [
+    'http://localhost:3000',      // Frontend development
+    'http://127.0.0.1:3000'       // Alternative localhost
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+
+// MongoDB Connection
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) {
+    console.log('Using existing database connection');
+    return;
+  }
+
+  try {
+    const db = await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    isConnected = db.connections[0].readyState;
+    console.log('✅ MongoDB Connected');
+  } catch (error) {
+    console.error('❌ MongoDB Error:', error.message);
+  }
+};
+
+// Connect DB on startup
+connectDB();
 
 // Routes
 app.get('/', (req, res) => {
   res.json({ 
-    message: '✅ E-Letter API Running on Vercel',
+    message: '✅ E-Letter API Running',
     status: 'OK',
     timestamp: new Date().toISOString(),
     version: '1.0.0'
@@ -29,9 +62,20 @@ app.get('/api', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'healthy',
-    database: 'connected'
+    database: isConnected ? 'connected' : 'disconnected'
   });
 });
+
+// API Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/disposisi', require('./routes/disposisi'));
+app.use('/api/instansi', require('./routes/instansi'));
+app.use('/api/klasifikasi', require('./routes/klasifikasi'));
+app.use('/api/laporan', require('./routes/laporan'));
+app.use('/api/surat-keluar', require('./routes/suratKeluar'));
+app.use('/api/surat-masuk', require('./routes/suratMasuk'));
+app.use('/api/users', require('./routes/users'));
 
 // 404 handler
 app.use((req, res) => {
@@ -50,13 +94,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Connect DB (untuk serverless, connection di-cache otomatis)
-connectDB().catch(err => console.error('DB Connection Failed:', err));
-
-// Export untuk Vercel Serverless
+// Export for Vercel
 module.exports = app;
 
-// Untuk development lokal
+// For local development
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {

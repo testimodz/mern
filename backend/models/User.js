@@ -5,31 +5,26 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
-    trim: true
-  },
-  nip: {
-    type: String,
-    unique: true,
-    sparse: true, // Allow null/undefined but still unique
-    trim: true
+    unique: true
   },
   nama: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   email: {
     type: String,
     required: true,
-    unique: true,
-    lowercase: true,
-    trim: true
+    unique: true
   },
   password: {
     type: String,
     required: true,
     select: false
+  },
+  nip: {
+    type: String,
+    // HAPUS: required: true
+    default: '' // Optional
   },
   jabatan: {
     type: String,
@@ -42,26 +37,21 @@ const userSchema = new mongoose.Schema({
   },
   foto: {
     type: String,
-    default: null
+    default: ''
   }
-}, {
-  timestamps: true
+}, { 
+  timestamps: true 
 });
 
-// Hash password before save
+// Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
-// Compare password method
+// Compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };

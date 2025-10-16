@@ -49,6 +49,13 @@ router.post('/register', async (req, res) => {
   try {
     const { username, nama, email, password, jabatan } = req.body;
 
+    // Validasi (HAPUS nip dari required)
+    if (!username || !nama || !email || !password || !jabatan) {
+      return res.status(400).json({ 
+        message: 'Username, nama, email, password, dan jabatan harus diisi' 
+      });
+    }
+
     // Check existing user
     const existingUser = await User.findOne({ 
       $or: [{ email }, { username }] 
@@ -60,15 +67,15 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Create user
+    // Create user (NIP optional)
     const user = new User({
       username,
       nama,
       email,
       password,
       jabatan,
+      nip: req.body.nip || '', // Optional
       level: 'user'
-      // NIP tidak diset (optional)
     });
 
     await user.save();
@@ -79,31 +86,6 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Forgot Password
-router.post('/forgot-password', async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'Email tidak ditemukan' });
-    }
-
-    const tempPassword = Math.random().toString(36).slice(-8);
-    user.password = tempPassword;
-    await user.save();
-
-    console.log(`Temporary password for ${email}: ${tempPassword}`);
-
-    res.json({
-      success: true,
-      message: 'Link reset password telah dikirim ke email Anda'
-    });
-  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
