@@ -8,8 +8,9 @@ const app = express();
 // Middleware - FIX CORS!
 app.use(cors({
   origin: [
-    'http://localhost:3000',      // Frontend development
-    'http://127.0.0.1:3000'       // Alternative localhost
+    'http://localhost:3000',                      // Frontend development
+    'http://127.0.0.1:3000',                      // Alternative localhost
+    'https://shiny-biscuit-967eb3.netlify.app'   // 🚀 NETLIFY PRODUCTION
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
